@@ -6,7 +6,7 @@ from mmdet.models import build_detector
 from modify_config_to_offTheDip_dataset import cfg as config
 from my_inference_video_module import parse_video
 
-checkpoint = 'tutorial_exps/epoch_12.pth'  # Setup a checkpoint file to load
+checkpoint = 'tutorial_exps/latest.pth'  # Setup a checkpoint file to load
 device='cuda:0'  # Set the device to be used for evaluation
 config.model.pretrained = None  # Set pretrained to be None since we do not need pretrained model here
 model = build_detector(config.model)  # Initialize the detector
@@ -21,13 +21,14 @@ img = 'my_project_files/data_for_inference/1211.jpg'
 result = inference_detector(model, img)
 
 # Let's plot the result
-#show_result_pyplot(model, img, result, score_thr=0.3)
+show_result_pyplot(model, img, result, score_thr=0.3)
+model.show_result(img, result, out_file='my_project_files/data_for_inference/output/1211_res.jpg')
 
 # Let's try inference a video
 parse_video(
     video='my_project_files/data_for_inference/3.mp4',
     architecture_config='tutorial_exps/my_config.py',
-    checkpoints='tutorial_exps/epoch_12.pth',
+    checkpoints='tutorial_exps/latest.pth',
     result_path='my_project_files/data_for_inference/output/video_3_res.mp4',
     show=True,  # uncomment to show video inference live
 )

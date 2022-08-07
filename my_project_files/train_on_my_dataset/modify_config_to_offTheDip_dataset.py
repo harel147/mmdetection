@@ -43,6 +43,42 @@ cfg.optimizer.lr = 0.02 / 8
 cfg.lr_config.warmup = None
 cfg.log_config.interval = 10
 
+# try another config:
+cfg.optimizer.type = 'SGD'
+cfg.optimizer.lr = 0.02
+cfg.optimizer.momentum = 0.9
+cfg.optimizer.weight_decay = 0.0001
+cfg.optimizer_config.grad_clip = None
+cfg.lr_config.policy = 'step'
+cfg.lr_config.warmup = 'linear'
+cfg.lr_config.warmup_iters = 500
+cfg.lr_config.warmup_ratio = 0.001
+cfg.lr_config.step = [7]
+#cfg.runner.max_epochs = 8
+cfg.log_config.interval = 100
+
+# try to randomly crop the photo because our objects are small
+cfg.train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='LoadAnnotations', with_bbox=True),
+    dict(type='RandomCrop', crop_size=(40, 24)),
+    dict(
+        type='Resize',
+        img_scale=[(1333, 640), (1333, 672), (1333, 704), (1333, 736),
+                   (1333, 768), (1333, 800)],
+        multiscale_mode='value',
+        keep_ratio=True),
+    dict(type='RandomFlip', flip_ratio=0.5),
+    dict(
+        type='Normalize',
+        mean=[103.53, 116.28, 123.675],
+        std=[1.0, 1.0, 1.0],
+        to_rgb=False),
+    dict(type='Pad', size_divisor=32),
+    dict(type='DefaultFormatBundle'),
+    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
+]
+
 # Change the evaluation metric since we use customized dataset.
 cfg.evaluation.metric = 'mAP'
 # We can set the evaluation interval to reduce the evaluation times

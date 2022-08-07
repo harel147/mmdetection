@@ -110,6 +110,7 @@ img_norm_cfg = dict(
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True),
+    dict(type='RandomCrop', crop_size=(40, 24)),
     dict(
         type='Resize',
         img_scale=[(1333, 640), (1333, 672), (1333, 704), (1333, 736),
@@ -221,18 +222,18 @@ data = dict(
         ],
         data_root='my_project_files/data_training/'))
 evaluation = dict(interval=12, metric='mAP')
-optimizer = dict(type='SGD', lr=0.0025, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=None)
 lr_config = dict(
     policy='step',
-    warmup=None,
+    warmup='linear',
     warmup_iters=500,
     warmup_ratio=0.001,
-    step=[8, 11])
+    step=[7])
 runner = dict(type='EpochBasedRunner', max_epochs=12)
 checkpoint_config = dict(interval=12)
 log_config = dict(
-    interval=10,
+    interval=100,
     hooks=[dict(type='TextLoggerHook'),
            dict(type='TensorboardLoggerHook')])
 custom_hooks = [dict(type='NumClassCheckHook')]
