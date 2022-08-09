@@ -26,6 +26,7 @@ model.show_result(img, result, out_file='my_project_files/data_for_inference/out
 
 # Let's try inference a video
 parse_video(
+    #video='my_project_files/data_for_inference/out_4_resized_video.mp4',
     video='my_project_files/data_for_inference/3.mp4',
     architecture_config='tutorial_exps/my_config.py',
     checkpoints='tutorial_exps/latest.pth',

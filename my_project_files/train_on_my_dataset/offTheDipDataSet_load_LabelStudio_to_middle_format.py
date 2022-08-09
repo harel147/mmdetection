@@ -18,18 +18,23 @@ class OffTheDipDataset(CustomDataset):
     #CLASSES = ('bird',)
     #CLASSES = ('person', 'bird')
 
-    studio_label_ann = 'my_project_files/data_training/labels/3.json'
+    studio_label_ann = ['my_project_files/data_training/labels/3.json',
+                        'my_project_files/data_training/labels/4_1470_last_frame.json',
+                        ]
+    studio_label_prefix = ['',
+                           '40000',
+                           ]
 
     def load_annotations(self, ann_file):
-        with open(self.studio_label_ann) as f:
-          d = json.load(f)
-
-        results = d["result"]
-
         data_infos = []
         frames = []
 
-        for i in range(len(self.CLASSES)):
+        for pre, SL_ann_file in enumerate(self.studio_label_ann):
+            with open(SL_ann_file) as f:
+              d = json.load(f)
+
+            results = d["result"]
+
             for res in results:
                 seq = res["value"]["sequence"]
                 for f in seq:
@@ -39,20 +44,20 @@ class OffTheDipDataset(CustomDataset):
                     pixel_width = f["width"] / 100.0 * IMAGE_WIDTH
                     pixel_height = f["height"] / 100.0 * IMAGE_HEIGHT
 
-                    if f["frame"] not in frames:
-                        frames.append(f["frame"])
-                        data_info = dict(filename=f'{f["frame"]}.jpg', width=1280, height=720, ann=dict(bboxes=[], labels=[], bboxes_ignore=[], labels_ignore=[]))
+                    if f'{self.studio_label_prefix[pre]}{f["frame"]}' not in frames:
+                        frames.append(f'{self.studio_label_prefix[pre]}{f["frame"]}')
+                        data_info = dict(filename=f'{self.studio_label_prefix[pre]}{f["frame"]}.jpg', width=1280, height=720, ann=dict(bboxes=[], labels=[], bboxes_ignore=[], labels_ignore=[]))
                         bboxes = [pixel_x, pixel_y, (pixel_x+pixel_width), (pixel_y+pixel_height)]
                         data_info["ann"]["bboxes"].append(bboxes)
-                        data_info["ann"]["labels"].append(i)
+                        data_info["ann"]["labels"].append(0)
                         data_infos.append(data_info)
 
                     else:
                         for d in data_infos:
-                            if d["filename"] == f'{f["frame"]}.jpg':
+                            if d["filename"] == f'{self.studio_label_prefix[pre]}{f["frame"]}.jpg':
                                 bboxes = [pixel_x, pixel_y, (pixel_x+pixel_width), (pixel_y+pixel_height)]
                                 d["ann"]["bboxes"].append(bboxes)
-                                d["ann"]["labels"].append(i)
+                                d["ann"]["labels"].append(0)
 
         for d in data_infos:
             d["ann"]["bboxes"] = np.array(d["ann"]["bboxes"], dtype=np.float32).reshape(-1, 4)
