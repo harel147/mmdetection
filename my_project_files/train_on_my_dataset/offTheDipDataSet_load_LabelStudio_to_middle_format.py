@@ -14,9 +14,8 @@ IMAGE_HEIGHT = 720
 @DATASETS.register_module()
 class OffTheDipDataset(CustomDataset):
 
-    CLASSES = ('person',)
-    #CLASSES = ('bird',)
-    #CLASSES = ('person', 'bird')
+    CLASSES = ('sitting', 'standing')
+    #CLASSES = ('person',)
 
     studio_label_ann = ['my_project_files/data_training/labels/3.json',
                         'my_project_files/data_training/labels/4_1470_last_frame.json',
@@ -37,6 +36,10 @@ class OffTheDipDataset(CustomDataset):
 
             for res in results:
                 seq = res["value"]["sequence"]
+                if "labels" in res["value"]:
+                    obj_label = res["value"]["labels"][0]
+                else:  # in case there's no label from some reason
+                    obj_label = 'sitting'
                 for f in seq:
                     # label studio format are percentages of overall image dimension, need to translate to real dimentions.
                     pixel_x = f["x"] / 100.0 * IMAGE_WIDTH
@@ -49,7 +52,10 @@ class OffTheDipDataset(CustomDataset):
                         data_info = dict(filename=f'{self.studio_label_prefix[pre]}{f["frame"]}.jpg', width=1280, height=720, ann=dict(bboxes=[], labels=[], bboxes_ignore=[], labels_ignore=[]))
                         bboxes = [pixel_x, pixel_y, (pixel_x+pixel_width), (pixel_y+pixel_height)]
                         data_info["ann"]["bboxes"].append(bboxes)
-                        data_info["ann"]["labels"].append(0)
+                        if obj_label == 'sitting':
+                            data_info["ann"]["labels"].append(0)
+                        else:  # standing
+                            data_info["ann"]["labels"].append(1)
                         data_infos.append(data_info)
 
                     else:
@@ -57,7 +63,10 @@ class OffTheDipDataset(CustomDataset):
                             if d["filename"] == f'{self.studio_label_prefix[pre]}{f["frame"]}.jpg':
                                 bboxes = [pixel_x, pixel_y, (pixel_x+pixel_width), (pixel_y+pixel_height)]
                                 d["ann"]["bboxes"].append(bboxes)
-                                d["ann"]["labels"].append(0)
+                                if obj_label == 'sitting':
+                                    d["ann"]["labels"].append(0)
+                                else:  # standing
+                                    d["ann"]["labels"].append(1)
 
         for d in data_infos:
             d["ann"]["bboxes"] = np.array(d["ann"]["bboxes"], dtype=np.float32).reshape(-1, 4)
